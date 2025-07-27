@@ -1,0 +1,283 @@
+
+<template>
+  <div class="library-back-ground">
+    <div class="movie-library">
+      <!-- Title and Search -->
+      <div class="header-list">
+        <h1 style="color: white">Collect Your Favourites</h1>
+
+        <div class="search-bar">
+          <input
+            v-model="searchQuery"
+            @keyup.enter="searchMovie"
+            type="text"
+            placeholder="Search title and add to grid"
+          />
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Movie Grid -->
+      <div class="movie-list">
+        <div v-if="movies.length === 0" class="no-movies-message">
+          <p>No items</p>
+        </div>
+
+        <div
+          class="movie-item"
+          v-for="(movie, index) in movies"
+          :key="movie.id"
+          :ref="el => movieRefs[index] = el"
+        >
+          <!-- Remove Button -->
+          <span class="close-icon" @click="removeMovie(index)">×</span>
+
+          <img :src="movie.image?.medium" :alt="movie.name" />
+          <div class="movie-card-bottom">
+            <h2>{{ movie.name }}</h2>
+            <p v-html="truncate(movie.summary || '', 140)"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch, nextTick } from 'vue'
+import gsap from 'gsap'
+
+const movies = ref([])
+const searchQuery = ref('')
+const movieRefs = []
+
+// Fetch initial 3 shows from TVMaze
+const initialIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+const fetchShow = async (id) => {
+  const res = await fetch(`https://api.tvmaze.com/shows/${id}`)
+  return res.json()
+}
+
+onMounted(async () => {
+  const data = await Promise.all(initialIds.map(id => fetchShow(id)))
+  movies.value = data
+})
+
+// Animate on movie addition
+watch(movies, async (newVal, oldVal) => {
+  await nextTick()
+  if (newVal.length > oldVal.length) {
+    const el = movieRefs[newVal.length - 1]
+    gsap.fromTo(el, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5 })
+  }
+})
+
+// Search by title and add
+// const searchMovie = async () => {
+//   if (!searchQuery.value.trim()) return
+//   const res = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
+//   const data = await res.json()
+
+//   if (data.length > 0) {
+//     const newShow = data[0].show
+//     const alreadyExists = movies.value.find((m) => m.id === newShow.id)
+//     if (!alreadyExists) {
+//       movies.value.push(newShow)
+//     }
+//   }
+
+//   searchQuery.value = ''
+// }
+const searchMovie = async () => {
+  if (!searchQuery.value.trim()) return
+
+  const res = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
+  const results = await res.json()
+
+  if (results.length > 0) {
+    const firstMatch = results[0].show
+    const exists = movies.value.some(m => m.id === firstMatch.id)
+
+    if (!exists) {
+      movies.value.push(firstMatch)
+    }
+  }
+
+  searchQuery.value = ''
+}
+
+
+// Truncate text
+const truncate = (text, length) => {
+  return text.length > length ? text.slice(0, length) + '...' : text
+}
+
+// Animate removal
+const removeMovie = (index) => {
+  const el = movieRefs[index]
+  gsap.to(el, {
+    opacity: 0,
+    y: 50,
+    duration: 0.4,
+    onComplete: () => {
+      movies.value.splice(index, 1)
+    },
+  })
+}
+</script>
+<style scoped>
+.library-back-ground{
+background-color: #1f1f1f;
+margin-top: 20px;
+}
+.movie-library {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px;
+  font-family: Arial, sans-serif;
+  
+}
+
+.header-list {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  background-color: #1e1e1e; /* dark background */
+  /* padding: 10px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-bar input[type="text"] {
+  background-color: transparent;
+  border: 1px solid #aaa;
+  padding: 10px 40px; /* space for icon */
+  color: #fff;
+  font-size: 16px;
+  border-radius: 6px;
+  outline: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.49 19l-5-5zm-6 0C8.01 14 6 11.99 6 9.5S8.01 5 10.5 5 15 7.01 15 9.5 12.99 14 10.5 14z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-size: 20px 20px;
+  /* width: 300px; */
+}
+
+
+
+.no-movies-message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #888;
+  padding: 40px 0;
+}
+
+.movie-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.close-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 38px;
+  font-family: "Courier New", Courier, monospace;
+  width: 34px;
+  height: 34px;
+  text-align: center;
+  line-height: 32px;
+  cursor: pointer;
+  z-index: 1;
+}
+.close-icon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.movie-item {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+ 
+}
+
+.movie-item:hover {
+  transform: translateY(-5px);
+}
+
+.movie-item img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+}
+
+.movie-card-bottom {
+  padding: 15px;
+  background-color: #333030;
+  color: white;
+  
+}
+
+.movie-item h2 {
+  margin: 10px 0 5px;
+  font-size: 1.2rem;
+}
+
+.movie-item p {
+  font-size: 0.95rem;
+  color: #ddd;
+  line-height: 1.4;
+}
+
+/* ✅ Responsive tweaks */
+@media (max-width: 768px) {
+  .header-list {
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 10px;
+  }
+
+  .search-bar input {
+     width: 250px;
+  }
+ 
+  .movie-item h2 {
+    font-size: 1rem;
+  }
+
+  .movie-item p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-library {
+    padding: 15px;
+  }
+
+  .movie-list {
+    grid-template-columns: 1fr;
+  }
+
+  .search-bar input {
+    width: 250px;
+  }
+
+  .movie-card-bottom {
+    padding: 10px;
+  }
+}
+</style>
+
