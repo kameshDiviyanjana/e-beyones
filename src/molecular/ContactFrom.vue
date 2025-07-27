@@ -1,44 +1,4 @@
-<!-- <script setup>
-import InputAtoms from '../atoms/InputAtoms.vue';
-</script>
 
-<template>
- <div class="contact-form">
-<div class="name-filed">
-        <InputAtoms
-      v-model="name"
-      title=" First Name"
-      type="text"/>
-          <InputAtoms
-      v-model="name"
-      title=" Last Name"
-      type="text"/>
-</div>
-       <InputAtoms
-      v-model="name"
-      title="Email"
-      type="text"/>
-       <InputAtoms
-      v-model="name"
-      title="Telephone"
-      type="text"/>
- </div>
-</template>
-
-<style scoped>
-.contact-form {
-    display: flex;
-  flex-direction: column;
-  
-  padding: 20px;
-}   
-
-.name-filed {
-    display: grid;
-    grid-row: 1fr;
-  gap: 20px;
-}
-</style> -->
 <script setup>
 import { ref } from "vue";
 import InputAtoms from "../atoms/InputAtoms.vue";
@@ -51,39 +11,59 @@ const email = ref("");
 const telephone = ref("");
 const message = ref("");
 const agreed = ref(false);
+const validateTrigger = ref(false);
+
+function submitForm() {
+  event?.preventDefault(); 
+    validateTrigger.value = true; 
+
+  if (firstName.value && lastName.value && email.value && telephone.value && message.value && agreed.value) {
+    alert("Form submitted successfully!");
+    
+    console.log("Form submitted successfully!");
+  } else {
+    console.error("Please fill in all required fields and agree to the terms.");
+  }
+}
 </script>
 
 <template>
   <form class="contact-form">
-    <!-- Name fields -->
+  
     <div class="name-fields">
       <InputAtoms
         v-model="firstName"
         title="First Name"
         type="text"
         :required="true"
+              :validateNow="validateTrigger"
+
       />
       <InputAtoms
         v-model="lastName"
         title="Last Name"
         type="text"
         :required="true"
+              :validateNow="validateTrigger"
+
       />
     </div>
 
-    <!-- Contact info -->
+   
     <InputAtoms v-model="email" title="Email" type="email" :required="true" />
     <InputAtoms
       v-model="telephone"
       title="Telephone"
       type="tel"
       :required="true"
+            :validateNow="validateTrigger"
+
     />
 
-    <!-- Message -->
+  
     <TextAreaAtoms v-model="message" title="Message" :required="true" />
 
-    <!-- Terms and conditions -->
+    
     <div class="terms-container">
       <p class="required-note">* Required fields</p>
       <div class="checkbox-wrapper">
@@ -95,9 +75,9 @@ const agreed = ref(false);
       </div>
     </div>
 
-    <!-- Submit button -->
+
     <div class="button-form">
-      <ButtonAtoms title="SUBMIT" :btwidth="'200px'" />
+      <ButtonAtoms title="SUBMIT" :btwidth="'200px'"  @click="submitForm"   />
     </div>
   </form>
 </template>
@@ -107,8 +87,7 @@ const agreed = ref(false);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* padding: 24px; */
-  /* max-width: 700px; */
+  
   margin: auto;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
@@ -158,87 +137,3 @@ const agreed = ref(false);
   margin-top: 20px;
 }
 </style>
-
-<!-- <script setup>
-import { ref } from 'vue'
-import InputAtoms from '../atoms/InputAtoms.vue'
-import TextAreaAtoms from '../atoms/TextAreaAtoms.vue';
-import ButtonAtoms from '../atoms/ButtonAtoms.vue';
-
-// Separate refs for each field
-const firstName = ref('')
-const lastName = ref('')
-const email = ref('')
-const telephone = ref('')
-</script>
-
-<template>
-  <div class="contact-form">
-    <div class="name-field">
-      <InputAtoms
-        v-model="firstName"
-        title="First Name"
-        type="text"
-        required="true"
-      />
-      <InputAtoms
-        v-model="lastName"
-        title="Last Name"
-        type="text"
-        required="true"
-      />
-    </div>
-
-    <InputAtoms
-      v-model="email"
-      title="Email"
-      type="text"
-      required="true"
-    />
-    
-    <InputAtoms
-      v-model="telephone"
-      title="Telephone"
-      type="text"
-      required="true"
-    />
-    <TextAreaAtoms
-      v-model="message"
-      title="Message"
-      type="text"/>
-<div>
-        <p> * required fields
-</p>
-<input type="checkbox" id="terms" name="terms" value="agree">
-<p> I agree to the <span>Terms & Conditions</span></p>
-</div>
-     <div class="button-form">
-         <ButtonAtoms title=" SUBMIT
-"
-btwidth="200px" />
-     </div>
-  </div>
-</template>
-
-<style scoped>
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
-}
-
-.name-field {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.button-form {
-  display: flex;
-  justify-content: end;
-  margin-top: 20px;
-  
-}
-</style> -->

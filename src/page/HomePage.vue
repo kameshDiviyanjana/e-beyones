@@ -6,9 +6,7 @@ import ContactComponet from '../components/ContactComponet.vue';
 import FooterComponet from '../components/FooterComponet.vue';
 </script>
 <template>
-     <!-- <HeaderComponent/> -->
  <HeaderImageComponent/>
  <MovieLibraryComponent/>
  <ContactComponet/>
- <!-- <FooterComponet/> -->
 </template>
