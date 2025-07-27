@@ -6,7 +6,7 @@ const props = defineProps({
   title: String,
   type: {
     type: String,
-    default: "text", // default input type
+    default: "text", 
   },
 });
 
@@ -61,7 +61,7 @@ function onInput(e) {
   font-size: 1rem;
   border-radius: 4px;
   width: 100%;
-  box-sizing: border-box; /* Ensures padding is included in width */
+  box-sizing: border-box; 
   border: none;
 }
 </style>

@@ -2,14 +2,13 @@
 <template>
   <div class="library-back-ground">
     <div class="movie-library">
-      <!-- Title and Search -->
-      <div class="header-list">
+      <div ref="headerTitleRef" class="header-list">
         <h1 style="color: white">Collect Your Favourites</h1>
 
         <div class="search-bar">
           <input
             v-model="searchQuery"
-            @keyup.enter="searchMovie"
+            @input="searchMovie"
             type="text"
             placeholder="Search title and add to grid"
           />
@@ -18,8 +17,7 @@
 
       <hr />
 
-      <!-- Movie Grid -->
-      <div class="movie-list">
+      <div ref="headerRef" class="movie-list">
         <div v-if="movies.length === 0" class="no-movies-message">
           <p>No items</p>
         </div>
@@ -30,7 +28,6 @@
           :key="movie.id"
           :ref="el => movieRefs[index] = el"
         >
-          <!-- Remove Button -->
           <span class="close-icon" @click="removeMovie(index)">×</span>
 
           <img :src="movie.image?.medium" :alt="movie.name" />
@@ -47,24 +44,40 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
 import gsap from 'gsap'
+import { fetchInitialShows,searchShows } from '../api/tvmazeApi' 
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
 
 const movies = ref([])
 const searchQuery = ref('')
 const movieRefs = []
+const headerRef = ref(null)
+const headerTitleRef = ref(null)
 
-// Fetch initial 3 shows from TVMaze
 const initialIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-const fetchShow = async (id) => {
-  const res = await fetch(`https://api.tvmaze.com/shows/${id}`)
-  return res.json()
-}
 
 onMounted(async () => {
-  const data = await Promise.all(initialIds.map(id => fetchShow(id)))
-  movies.value = data
-})
+  movies.value = await fetchInitialShows(initialIds);
+});
 
-// Animate on movie addition
+const searchMovie = async () => {
+  
+  const query = searchQuery.value.trim();
+
+  if (!query) {
+    
+    movies.value = await fetchInitialShows(initialIds);
+    return;
+  }
+
+  try {
+    movies.value = await searchShows(searchQuery.value);
+  } catch (err) {
+    console.error(err);
+    alert('Search failed.');
+  }
+};
+
 watch(movies, async (newVal, oldVal) => {
   await nextTick()
   if (newVal.length > oldVal.length) {
@@ -73,47 +86,39 @@ watch(movies, async (newVal, oldVal) => {
   }
 })
 
-// Search by title and add
-// const searchMovie = async () => {
-//   if (!searchQuery.value.trim()) return
-//   const res = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
-//   const data = await res.json()
+onMounted(() => {
+  gsap.from(headerRef.value, {
+    scrollTrigger: {
+      trigger: headerRef.value,
+      start: 'top 90%',
+      toggleActions: 'play none none none',
+    },
+    opacity: 0,
+    y: 50,
+    duration: 1,
+    ease: 'power2.out',
+  })
+})
 
-//   if (data.length > 0) {
-//     const newShow = data[0].show
-//     const alreadyExists = movies.value.find((m) => m.id === newShow.id)
-//     if (!alreadyExists) {
-//       movies.value.push(newShow)
-//     }
-//   }
-
-//   searchQuery.value = ''
-// }
-const searchMovie = async () => {
-  if (!searchQuery.value.trim()) return
-
-  const res = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
-  const results = await res.json()
-
-  if (results.length > 0) {
-    const firstMatch = results[0].show
-    const exists = movies.value.some(m => m.id === firstMatch.id)
-
-    if (!exists) {
-      movies.value.push(firstMatch)
-    }
-  }
-
-  searchQuery.value = ''
-}
+onMounted(() => {
+  gsap.from(headerTitleRef.value, {
+    scrollTrigger: {
+      trigger: headerTitleRef.value,
+      start: 'top 90%',
+      toggleActions: 'play none none none',
+    },
+    opacity: 0,
+    x: 50,
+    duration: 1,
+    ease: 'power2.out',
+  })
+})
 
 
-// Truncate text
 const truncate = (text, length) => {
   return text.length > length ? text.slice(0, length) + '...' : text
 }
 
-// Animate removal
 const removeMovie = (index) => {
   const el = movieRefs[index]
   gsap.to(el, {
@@ -149,8 +154,7 @@ margin-top: 20px;
 }
 
 .search-bar {
-  background-color: #1e1e1e; /* dark background */
-  /* padding: 10px; */
+  background-color: #1e1e1e; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -159,7 +163,7 @@ margin-top: 20px;
 .search-bar input[type="text"] {
   background-color: transparent;
   border: 1px solid #aaa;
-  padding: 10px 40px; /* space for icon */
+  padding: 10px 40px;
   color: #fff;
   font-size: 16px;
   border-radius: 6px;
@@ -168,7 +172,7 @@ margin-top: 20px;
   background-repeat: no-repeat;
   background-position: 10px center;
   background-size: 20px 20px;
-  /* width: 300px; */
+  
 }
 
 
@@ -241,7 +245,6 @@ margin-top: 20px;
   line-height: 1.4;
 }
 
-/* ✅ Responsive tweaks */
 @media (max-width: 768px) {
   .header-list {
     flex-direction: column;

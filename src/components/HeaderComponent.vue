@@ -14,12 +14,10 @@ function toggleMenu() {
       <img src="../assets/Logos/Logo White.svg" alt="Logo" class="logo-img" />
     </div>
 
-    <!-- Hamburger only on small screens -->
     <button class="hamburger" @click="toggleMenu" aria-label="Open menu">
       &#9776;
     </button>
 
-    <!-- Side nav for mobile/tablet, horizontal nav for desktop -->
     <nav :class="{ open: isOpen }" class="side-nav">
       <button class="close-btn" @click="toggleMenu" aria-label="Close menu">
         &times;
@@ -29,25 +27,25 @@ function toggleMenu() {
         <li><a href="#">Our Screens</a></li>
         <li><a href="/schedule">Schedule</a></li>
         <li><a href="/movie">Movie Library</a></li>
-        <li><a href="#">Location & Contact</a></li>
+        <li><a href="/mapContact">Location & Contact</a></li>
         <li><a href="#">Gallery</a></li>
       </ul>
     </nav>
 
-    <!-- Horizontal nav visible on desktop -->
     <nav class="desktop-nav">
       <ul class="nav-links ">
         <li><a href="/">Home</a></li>
         <li><a href="#">Our Screens</a></li>
         <li><a href="/schedule">Schedule</a></li>
         <li><a href="/movie">Movie Library</a></li>
-        <li><a href="#">Location & Contact</a></li>
+        <li><a href="/mapContact">Location & Contact</a></li>
         <li><a href="#">Gallery</a></li>
       </ul>
     </nav>
   </header>
 </template>
 <style scoped>
+
 
 .header {
   background-color: #070707;
@@ -72,32 +70,26 @@ function toggleMenu() {
   display: none;
 }
 
-
-
 .side-nav {
   position: fixed;
   top: 0;
   right: -100%;
   width: 250px;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Black with 80% opacity */
+  background-color: rgba(0, 0, 0, 0.8);
   color: white;
   display: flex;
   flex-direction: column;
   padding: 1rem;
   transition: right 0.3s ease-in-out;
   z-index: 999;
-  backdrop-filter: blur(6px); /* Optional: adds blur to what's behind */
+  backdrop-filter: blur(6px);
 }
-
 
 .side-nav.open {
   right: 0;
 }
 
-.nav-link:hover {
-  color: #ffd700;
-}
 .close-btn {
   align-self: flex-end;
   font-size: 2rem;
@@ -119,15 +111,17 @@ function toggleMenu() {
 .nav-links a {
   color: white;
   text-decoration: none;
-  padding: 0.5rem;
-  transition: background 0.3s;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .nav-links a:hover {
-  background-color: #222;
+  background-color: #333;
 }
 
-/* Horizontal nav for desktop */
 .desktop-nav {
   display: flex;
 }
@@ -142,16 +136,39 @@ function toggleMenu() {
 .desktop-nav .nav-links li {
   list-style: none;
 }
+.desktop-nav .nav-links a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+    background: transparent;
+
+  transition: all 0.3s ease;
+}
+
+.desktop-nav .nav-links a:hover {
+  color: white;
+  text-decoration: underline;
+  text-decoration-color: rgb(232, 223, 223);
+  text-underline-offset: 4px;
+    background: transparent !important;
+
+}
+
+.desktop-nav .nav-links a:hover::after {
+  width: 100%;
+}
+
+.desktop-nav .nav-links a.active::after {
+  width: 100%;
+}
 
 @media (max-width: 768px) {
   .header {
     padding-left: 10px;
     padding-right: 10px;
   }
-  
 }
 
-/* Media Queries */
 @media (max-width: 1024px) {
   .hamburger {
     display: block;
